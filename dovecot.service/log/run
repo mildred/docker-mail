@@ -1,0 +1,4 @@
+#!/bin/sh
+
+mkdir -p /var/log/dovecot
+exec multilog t /var/log/dovecot

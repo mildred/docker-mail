@@ -1,0 +1,7 @@
+#!/bin/sh
+
+mkdir -p /var/mail/home
+[ -e /var/mail/users ] || touch /var/mail/users
+chown mail:mail /var/mail/home /var/mail/users
+exec dovecot -F 2>&1
+

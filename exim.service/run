@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ -e /var/mail/exim.user.conf ] || touch /var/mail/exim.user.conf
+[ -e /var/log/exim ]            || mkdir -p /var/log/exim
+chgrp Debian-exim /etc/exim/exim.conf
+chown Debian-exim:Debian-exim /var/log/exim
+exec setuidgid Debian-exim exim4 -C /etc/exim/exim.conf -bdf
+
