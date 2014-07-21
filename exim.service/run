@@ -1,6 +1,21 @@
 #!/bin/sh
 
-[ -e /var/mail/exim.user.conf ] || touch /var/mail/exim.user.conf
+for conf in \
+  /var/mail/exim.user.conf
+  /var/mail/exim.main.user.conf
+  /var/mail/exim.acl.first.user.conf
+  /var/mail/exim.acl.last.user.conf
+  /var/mail/exim.router.first.user.conf
+  /var/mail/exim.router.local.user.conf
+  /var/mail/exim.router.alias.user.conf
+  /var/mail/exim.router.last.user.conf
+  /var/mail/exim.transports.conf
+  /var/mail/exim.retry.conf
+  /var/mail/exim.rewrite.conf
+  /var/mail/exim.auth.conf
+do
+  [ -e "$conf" ] || touch "$conf"
+done
 [ -e /var/log/exim ]            || mkdir -p /var/log/exim
 chgrp Debian-exim /etc/exim/exim.conf
 chown Debian-exim:Debian-exim /var/log/exim
