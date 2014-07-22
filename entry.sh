@@ -111,6 +111,7 @@ case "$1" in
     exec bash
     ;;
   init)
+    # FIXME: generate certificates in docker VOLUME
     exec /usr/bin/svscanboot
     ;;
   *)
