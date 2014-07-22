@@ -12,7 +12,7 @@ exim_replace_list(){
   [ -s "$f" ] || echo >> "$f"
   ls -l $f
   sed -i -e "/^$v/ d" -e "$ a $var" "$f"
-  echo sed -i -e "/^$v/ d" -e "$ a $var" "$f"
+  #echo sed -i -e "/^$v/ d" -e "$ a $var" "$f"
   cat "$f"
 }
 
