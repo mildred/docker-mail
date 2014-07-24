@@ -17,6 +17,10 @@ RUN { \
   ln -s /var/mail/users /etc/dovecot/users; \
   setfacl -m u:Debian-exim:r /etc/dovecot/private/dovecot.pem /etc/dovecot/dovecot.pem; \
   echo "/etc/exim/exim.conf" >> /etc/exim4/trusted_configs; \
+  groupadd ssl; \
+  useradd vmail; \
+  usermod -a -G ssl Debian-exim; \
+  usermod -a -G ssl dovecot; \
   }
 
 COPY dovecot-local.conf /etc/dovecot/local.conf

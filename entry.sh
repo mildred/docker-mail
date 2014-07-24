@@ -16,6 +16,26 @@ exim_replace_list(){
   cat "$f"
 }
 
+(
+  cd /var/mail
+  if ! [ -e /var/mail/ssl.cfg ]; then
+    cat >/var/mail/ssl.cfg <<EOF
+[ req ]
+distinguished_name = req_distinguished_name
+prompt             = no
+EOF
+  fi
+  if ! [ /var/mail/ssl.csr -nt /var/mail/ssl.cfg ] || ! [ -e /var/mail/ssl.key ]; then
+    openssl req -config /var/mail/ssl.cfg -new -newkey rsa:2048 -nodes \
+      -keyout /var/mail/ssl.key -out /var/mail/ssl.csr
+  fi
+  if ! [ -e /var/mail/ssl.crt ]; then
+    openssl x509 -req -days 3650 -in /var/mail/ssl.csr -signkey /var/mail/ssl.key -out /var/mail/ssl.crt
+  fi
+  chown root:ssl /var/mail/ssl.key /var/mail/ssl.csr /var/mail/ssl.crt
+  chmod g+r /var/mail/ssl.key
+)
+
 case "$1" in
   info)
     echo "$(wc -l /var/mail/users | cut -d' ' -f1) users in database"
@@ -82,7 +102,7 @@ case "$1" in
           echo "User $user already exists"
           exit 1
         fi
-        echo "$user:$pass:mail:mail::/var/mail/home/${user%@*}::" >> /var/mail/users
+        echo "$user:$pass:vmail:vmail::/var/mail/home/${user%@*}::" >> /var/mail/users
         ;;
       add-alias)
         alias="$3"
@@ -100,7 +120,7 @@ case "$1" in
           exit 1
         fi
         pass="$(grep -G "^$user:" /var/mail/users | cut -d':' -f2)"
-        echo "$alias:$pass:mail:mail::/var/mail/home/${user%@*}::" >> /var/mail/users
+        echo "$alias:$pass:vmail:vmail::/var/mail/home/${user%@*}::" >> /var/mail/users
         ;;
       *)
         cat /var/mail/users
