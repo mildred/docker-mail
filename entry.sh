@@ -18,22 +18,26 @@ exim_replace_list(){
 
 (
   cd /var/mail
-  if ! [ -e /var/mail/ssl.cfg ]; then
-    cat >/var/mail/ssl.cfg <<EOF
+  if ! [ -e ./ssl.cfg ]; then
+    cat >./ssl.cfg <<EOF
 [ req ]
-distinguished_name = req_distinguished_name
 prompt             = no
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+CN = *
 EOF
   fi
-  if ! [ /var/mail/ssl.csr -nt /var/mail/ssl.cfg ] || ! [ -e /var/mail/ssl.key ]; then
-    openssl req -config /var/mail/ssl.cfg -new -newkey rsa:2048 -nodes \
-      -keyout /var/mail/ssl.key -out /var/mail/ssl.csr
+  if ! [ ./ssl.csr -nt ./ssl.cfg ] || ! [ -e ./ssl.key ]; then
+    openssl req -config ./ssl.cfg -new -nodes \
+      -keyout ./ssl.key -out ./ssl.csr
   fi
-  if ! [ -e /var/mail/ssl.crt ]; then
-    openssl x509 -req -days 3650 -in /var/mail/ssl.csr -signkey /var/mail/ssl.key -out /var/mail/ssl.crt
+  if ! [ -e ./ssl.crt ]; then
+    openssl x509 -req -days 3650 -in ./ssl.csr -signkey ./ssl.key -out ./ssl.crt
   fi
-  chown root:ssl /var/mail/ssl.key /var/mail/ssl.csr /var/mail/ssl.crt
-  chmod g+r /var/mail/ssl.key
+  chown root:ssl ./ssl.key ./ssl.csr ./ssl.crt
+  chmod g+r ./ssl.key
 )
 
 case "$1" in
