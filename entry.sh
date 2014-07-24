@@ -4,7 +4,7 @@ exim_replace_list(){
   local f=/var/mail/exim.user.conf
   local v=$1
   shift 1
-  var="$v = $1"
+  var="$v == $1"
   shift
   for e in "$@"; do
     var="$var : $e"
