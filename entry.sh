@@ -28,16 +28,23 @@ distinguished_name = req_distinguished_name
 [ req_distinguished_name ]
 CN = *
 EOF
+    [ -e ./ssl.key ] && touch -r ssl.key ssl.cfg
   fi
-  if ! [ ./ssl.csr -nt ./ssl.cfg ] || ! [ -e ./ssl.key ]; then
+  if [ ./ssl.cfg -nt ./ssl.key ] || ! [ -e ./ssl.key ]; then
+    echo "Generating private key and certificate request"
     openssl req -config ./ssl.cfg -new -nodes \
       -keyout ./ssl.key -out ./ssl.csr
   fi
   if ! [ -e ./ssl.crt ]; then
+    echo "Generating self-signed certificate"
     openssl x509 -req -days 3650 -in ./ssl.csr -signkey ./ssl.key -out ./ssl.crt
+    echo "SSL certificate $(openssl x509 -in ./ssl.crt -noout -fingerprint)"
   fi
   chown root:ssl ./ssl.key ./ssl.csr ./ssl.crt
   chmod g+r ./ssl.key
+  [ -e exim.user.conf ]    || touch exim.user.conf
+  [ -e dovecot.user.conf ] || touch dovecot.user.conf
+  [ -e users ]             || touch users
 )
 
 case "$1" in
@@ -47,8 +54,8 @@ case "$1" in
     sed "s/^/    /" /var/mail/exim.user.conf
     ;;
   domain|domains)
-    local=$(grep LOCAL_DOMAINS /var/mail/exim.user.conf | cut -d= -f2 | tr -d ':')
-    relay=$(grep RELAY_DOMAINS /var/mail/exim.user.conf | cut -d= -f2 | tr -d ':')
+    local=$(grep LOCAL_DOMAINS /var/mail/exim.user.conf 2>/dev/null | cut -d= -f3 | tr -d ':')
+    relay=$(grep RELAY_DOMAINS /var/mail/exim.user.conf 2>/dev/null | cut -d= -f3 | tr -d ':')
     case "$2" in
       local)
         case "$3" in
@@ -132,11 +139,34 @@ case "$1" in
       esac
     ;;
   bash)
+    if ! tty >/dev/null 2>&1; then
+      echo "Must be run with -t (--tty) option"
+      exit 1
+    fi
     exec bash
     ;;
   init)
-    # FIXME: generate certificates in docker VOLUME
     exec /usr/bin/svscanboot
+    ;;
+  debug)
+    if ! tty >/dev/null 2>&1; then
+      echo "Must be run with -t (--tty) option"
+      exit 1
+    fi
+
+    exim_replace_list LOCAL_DOMAINS test
+    echo "test@test:$(printf 'test\ntest\n' | doveadm pw -s SHA512-CRYPT):vmail:vmail::/var/mail/home/test::" >/var/mail/users
+    
+    /usr/bin/svscanboot &
+    sleep 1
+    tail -F /var/log/dovecot/current /var/log/exim/current
+    
+    echo "Local domain added: test"
+    echo "User test@test created with password test"
+    echo "AUTH PLAIN $(printf "\0%s\0%s" test@test test | base64)"
+    echo "tail -F /var/log/dovecot/current /var/log/exim/current"
+
+    exec bash
     ;;
   *)
     echo "docker run --rm --volumes-from=CONTAINER -i -t IMAGE ..."
@@ -147,7 +177,7 @@ case "$1" in
     echo "... user|users add       [EMAIL@HOST [CRYPTED_PASSWORD]]"
     echo "... user|users add-alias [ALIAS@HOST [EMAIL@HOST]]"
     echo "... bash"
-    echo "docker run -i -t IMAGE ..."
+    echo "docker run -d -p 4190:4190 -p 993:993 -p 143:143 -p 25:25 -p 465:465 -p 587:587 IMAGE"
     echo "... init"
     exit 1
     ;;
