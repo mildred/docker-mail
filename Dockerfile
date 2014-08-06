@@ -13,6 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y net-tools netcat procps ma
 VOLUME /var/mail
 VOLUME /var/log/exim
 VOLUME /var/log/dovecot
+VOLUME /var/spool/exim4
 WORKDIR /
 
 RUN { \
