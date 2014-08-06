@@ -47,7 +47,25 @@ EOF
   [ -e users ]             || touch users
 )
 
-case "$1" in
+die(){
+  echo "$@" >&2
+  exit 1
+}
+
+setup(){
+  local local=$(grep LOCAL_DOMAINS /var/mail/exim.user.conf 2>/dev/null | cut -d= -f3 | tr -d ': ')
+  local relay=$(grep RELAY_DOMAINS /var/mail/exim.user.conf 2>/dev/null | cut -d= -f3 | tr -d ': ')
+  if [ -n "$LOCAL_DOMAINS" ]; then
+    [ -n "$local" ] && die "Cannot overwrite LOCAL_DOMAINS ($local) with environment variable (LOCAL_DOMAINS=$LOCAL_DOMAINS)"
+    exim_replace_list LOCAL_DOMAINS $LOCAL_DOMAINS
+  fi
+  if [ -n "$RELAY_DOMAINS" ]; then
+    [ -n "$relay" ] && die "Cannot overwrite RELAY_DOMAINS ($relay) with environment variable (RELAY_DOMAINS=$RELAY_DOMAINS)"
+    exim_replace_list LOCAL_DOMAINS $RELAY_DOMAINS
+  fi
+}
+
+case "${1:=init}" in
   info)
     echo "$(wc -l /var/mail/users | cut -d' ' -f1) users in database"
     echo "SMTP configuration:"
@@ -143,9 +161,11 @@ case "$1" in
       echo "Must be run with -t (--tty) option"
       exit 1
     fi
+    setup
     exec bash
     ;;
   init)
+    setup
     exec /usr/bin/svscanboot
     ;;
   debug)
@@ -156,6 +176,7 @@ case "$1" in
 
     exim_replace_list LOCAL_DOMAINS test
     echo "test@test:$(printf 'test\ntest\n' | doveadm pw -s SHA512-CRYPT):vmail:vmail::/var/mail/home/test::" >/var/mail/users
+    setup
     
     /usr/bin/svscanboot &
     sleep 1
@@ -169,6 +190,8 @@ case "$1" in
     exec bash
     ;;
   *)
+    echo "export LOCAL_DOMAINS=..."
+    echo "export RELAY_DOMAINS=..."
     echo "docker run --rm --volumes-from=CONTAINER -i -t IMAGE ..."
     echo "... info"
     echo "... domain|domains local|relay"
