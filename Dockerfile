@@ -35,4 +35,5 @@ COPY entry.sh                   /entry.sh
 EXPOSE 4190 993 143 25 465 587
 
 ENTRYPOINT ["/bin/bash", "/entry.sh"]
+CMD ["init"]
 

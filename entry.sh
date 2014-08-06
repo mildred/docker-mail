@@ -65,7 +65,7 @@ setup(){
   fi
 }
 
-case "${1:-init}" in
+case "${1}" in
   info)
     echo "$(wc -l /var/mail/users | cut -d' ' -f1) users in database"
     echo "SMTP configuration:"
