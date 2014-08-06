@@ -56,11 +56,11 @@ setup(){
   local local=$(grep LOCAL_DOMAINS /var/mail/exim.user.conf 2>/dev/null | cut -d= -f3 | tr -d ': ')
   local relay=$(grep RELAY_DOMAINS /var/mail/exim.user.conf 2>/dev/null | cut -d= -f3 | tr -d ': ')
   if [ -n "$LOCAL_DOMAINS" ]; then
-    [ -n "$local" ] && die "Cannot overwrite LOCAL_DOMAINS ($local) with environment variable (LOCAL_DOMAINS=$LOCAL_DOMAINS)"
+    [ -n "$local" ] && [ "a$local" != "a$LOCAL_DOMAINS" ] && die "Cannot overwrite LOCAL_DOMAINS ($local) with environment variable (LOCAL_DOMAINS=$LOCAL_DOMAINS)"
     exim_replace_list LOCAL_DOMAINS $LOCAL_DOMAINS
   fi
   if [ -n "$RELAY_DOMAINS" ]; then
-    [ -n "$relay" ] && die "Cannot overwrite RELAY_DOMAINS ($relay) with environment variable (RELAY_DOMAINS=$RELAY_DOMAINS)"
+    [ -n "$relay" ] && [ "a$relay" != "a$RELAY_DOMAINS" ] && die "Cannot overwrite RELAY_DOMAINS ($relay) with environment variable (RELAY_DOMAINS=$RELAY_DOMAINS)"
     exim_replace_list LOCAL_DOMAINS $RELAY_DOMAINS
   fi
 }
