@@ -29,7 +29,7 @@ COPY dovecot.service            /etc/service/dovecot
 COPY exim.service               /etc/service/exim
 COPY mark-submission-read.sieve /etc/dovecot/mark-submission-read.sieve
 COPY dovecot-local.conf         /etc/dovecot/local.conf
-COPY exim.conf                  /etc/exim/exim.conf
+COPY exim.conf                  /etc/exim/exim.conf.src
 COPY entry.sh                   /entry.sh
 
 # sieve=4190 imaps=993 imap2=143 smtp=25 smtps=465 submission=587
