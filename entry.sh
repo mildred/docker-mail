@@ -63,7 +63,7 @@ exim-list(){
 
 setup(){
   sed -e "s|%LOCAL_DOMAINS%|$(exim-list $LOCAL_DOMAINS)|g" \
-      -e 's|%RELAY_DOMAINS%|$(exim-list $RELAY_DOMAINS)|g' \
+      -e "s|%RELAY_DOMAINS%|$(exim-list $RELAY_DOMAINS)|g" \
       /etc/exim/exim.conf.src \
       >/etc/exim/exim.conf
 }
