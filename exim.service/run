@@ -18,7 +18,9 @@ do
 done
 [ -e /var/log/exim ] || mkdir -p /var/log/exim
 chgrp Debian-exim /etc/exim/exim.conf
-chown Debian-exim:Debian-exim /var/log/exim
+chown -R Debian-exim:Debian-exim /var/log/exim
+chown -R Debian-exim:Debian-exim /var/spool/exim4
+chmod a+x /var/spool/exim4
 # FIXME: debug
 exec setuidgid Debian-exim exim4 -C /etc/exim/exim.conf -bdf -d+all 2>&1 # debug: -d+all
 
